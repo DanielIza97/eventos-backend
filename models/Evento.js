@@ -1,40 +1,44 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const ProductoPedidoSchema = new mongoose.Schema({
-  productoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Producto', required: true },
-  nombre: String,
+  productoId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Producto",
+    required: true,
+  },
+  nombre: { type: String, required: true }, // Ahora requerido
   cantidad: { type: Number, required: true, min: 1 },
-  precioUnitario: { type: Number, required: true, min: 0 }
+  precioUnitario: { type: Number, required: true, min: 0 },
 });
 
 const ProductoRecogidoSchema = new mongoose.Schema({
-  productoId: { type: mongoose.Schema.Types.ObjectId, ref: 'Producto' },
-  cantidadRecogida: { type: Number, default: 0 }
+  productoId: { type: mongoose.Schema.Types.ObjectId, ref: "Producto" },
+  cantidadRecogida: { type: Number, default: 0 },
 });
 
 const EventoSchema = new mongoose.Schema({
   nombreCliente: { type: String, required: true },
-  tipoEvento: { type: String, default: 'pedido' },
+  tipoEvento: { type: String, default: "pedido" },
   fechaEvento: { type: Date, required: true },
   lugar: String,
   estado: {
     type: String,
-    enum: ['pendiente', 'organizando', 'completo', 'entregado', 'cancelado'],
-    default: 'pendiente'
+    enum: ["pendiente", "organizando", "completo", "entregado", "cancelado"],
+    default: "pendiente",
   },
   productos: [ProductoPedidoSchema],
-  recepcionistaId: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
-  supervisorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
-  despachadorId: { type: mongoose.Schema.Types.ObjectId, ref: 'Usuario' },
+  recepcionistaId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario" },
+  supervisorId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario" },
+  despachadorId: { type: mongoose.Schema.Types.ObjectId, ref: "Usuario" },
   productosRecogidos: [ProductoRecogidoSchema],
   observaciones: String,
   creadoEn: { type: Date, default: Date.now },
-  actualizadoEn: { type: Date, default: Date.now }
+  actualizadoEn: { type: Date, default: Date.now },
 });
 
-EventoSchema.pre('save', function(next) {
+EventoSchema.pre("save", function (next) {
   this.actualizadoEn = Date.now();
   next();
 });
 
-module.exports = mongoose.model('Evento', EventoSchema);
+module.exports = mongoose.model("Evento", EventoSchema);
