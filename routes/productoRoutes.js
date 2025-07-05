@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const Producto = require("../models/Producto");
-const verifyToken = require("../middlewares/verifyToken");
+const { verificarToken } = require("../middlewares/verificarToken");
 const upload = require("../middlewares/uploadMiddleware");
 const fs = require("fs");
 const path = require("path");
@@ -9,7 +9,7 @@ const path = require("path");
 // Crear producto (solo admin)
 router.post(
   "/",
-  verifyToken(["admin"]),
+  verificarToken(["admin"]),
   upload.array("imagenes", 5), // Máximo 5 imágenes
   async (req, res) => {
     try {
@@ -31,7 +31,7 @@ router.post(
 // Listar productos (roles permitidos)
 router.get(
   "/",
-  verifyToken(["admin", "recepcionista", "supervisor", "despachador"]),
+  verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
   async (req, res) => {
     try {
       const productos = await Producto.find();
@@ -45,7 +45,7 @@ router.get(
 // Actualizar producto (solo admin) con soporte para imágenes
 router.put(
   "/:id",
-  verifyToken(["admin"]),
+  verificarToken(["admin"]),
   upload.array("imagenes", 5), // imágenes nuevas para añadir
   async (req, res) => {
     try {
@@ -97,7 +97,7 @@ router.put(
 // Obtener producto por ID
 router.get(
   "/:id",
-  verifyToken(["admin", "recepcionista", "supervisor", "despachador"]),
+  verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
   async (req, res) => {
     try {
       const producto = await Producto.findById(req.params.id);
@@ -112,7 +112,7 @@ router.get(
 );
 
 // Eliminar producto (solo admin)
-router.delete("/:id", verifyToken(["admin"]), async (req, res) => {
+router.delete("/:id", verificarToken(["admin"]), async (req, res) => {
   try {
     const producto = await Producto.findByIdAndDelete(req.params.id);
     if (!producto)

@@ -4,8 +4,8 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const path = require("path");
 const fs = require("fs");
-const morgan = require("morgan"); // Para logs más elegantes
-const { verificarToken, verificarRol } = require("./middlewares/verifyToken");
+const morgan = require("morgan");
+const { verificarToken } = require("./middlewares/verificarToken");
 
 dotenv.config();
 
@@ -25,10 +25,7 @@ app.use("/uploads", express.static(uploadDir)); // Acceso a archivos estáticos
 
 // 🌐 Conexión a MongoDB
 mongoose
-  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/eventosdb", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(process.env.MONGODB_URI || "mongodb://localhost:27017/eventosdb")
   .then(() => console.log("✅ Conectado a MongoDB"))
   .catch((err) => console.error("❌ Error conexión Mongo:", err));
 
@@ -43,15 +40,13 @@ app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/productos", require("./routes/productoRoutes"));
 app.use(
   "/api/eventos",
-  verificarToken, // Token obligatorio
   verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
   require("./routes/eventoRoutes")
 );
 app.use(
   "/api/pedidos",
-  verificarToken,
   verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
-  require("./routes/pedidos")
+  require("./routes/pedidoRoutes")
 );
 
 // 🛠 Ruta de prueba

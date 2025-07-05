@@ -6,7 +6,7 @@ const ProductoPedidoSchema = new mongoose.Schema({
     ref: "Producto",
     required: true,
   },
-  nombre: { type: String, required: true }, // Ahora requerido
+  nombre: { type: String, required: true },
   cantidad: { type: Number, required: true, min: 1 },
   precioUnitario: { type: Number, required: true, min: 0 },
 });

@@ -2,12 +2,12 @@ const express = require("express");
 const router = express.Router();
 const Evento = require("../models/Evento");
 const Producto = require("../models/Producto");
-const verifyToken = require("../middlewares/verifyToken");
+const { verificarToken } = require("../middlewares/verificarToken");
 
 // Crear evento/pedido (admin y recepcionista)
 router.post(
   "/crear",
-  verifyToken(["admin", "recepcionista"]),
+  verificarToken(["admin", "recepcionista"]),
   async (req, res) => {
     try {
       const eventoData = req.body;
@@ -68,7 +68,7 @@ router.post(
 // Listar eventos con roles permitidos
 router.get(
   "/listar",
-  verifyToken(["admin", "recepcionista", "supervisor", "despachador"]),
+  verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
   async (req, res) => {
     try {
       const eventos = await Evento.find().populate(
@@ -84,7 +84,7 @@ router.get(
 // Actualizar estado, roles, productos y otros campos (admin y supervisor)
 router.put(
   "/actualizar/:id",
-  verifyToken(["admin", "supervisor"]),
+  verificarToken(["admin", "supervisor"]),
   async (req, res) => {
     try {
       const evento = await Evento.findById(req.params.id);
@@ -135,7 +135,7 @@ router.put(
 // Obtener evento por ID (para editar)
 router.get(
   "/:id",
-  verifyToken(["admin", "recepcionista", "supervisor", "despachador"]),
+  verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
   async (req, res) => {
     try {
       const evento = await Evento.findById(req.params.id).populate(
