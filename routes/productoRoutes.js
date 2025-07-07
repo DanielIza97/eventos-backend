@@ -1,127 +1,44 @@
 const express = require("express");
 const router = express.Router();
-const Producto = require("../models/Producto");
 const { verificarToken } = require("../middlewares/verificarToken");
 const upload = require("../middlewares/uploadMiddleware");
-const fs = require("fs");
-const path = require("path");
+const productoController = require("../controllers/productoController");
 
 // Crear producto (solo admin)
 router.post(
   "/",
   verificarToken(["admin"]),
-  upload.array("imagenes", 5), // Máximo 5 imágenes
-  async (req, res) => {
-    try {
-      const imagenes = req.files.map((file) => file.filename);
-
-      const producto = new Producto({
-        ...req.body,
-        imagenes,
-      });
-
-      await producto.save();
-      res.status(201).json(producto);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  }
+  upload.array("imagenes", 5),
+  productoController.crearProducto
 );
 
 // Listar productos (roles permitidos)
 router.get(
   "/",
   verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
-  async (req, res) => {
-    try {
-      const productos = await Producto.find();
-      res.json(productos);
-    } catch (error) {
-      res.status(500).json({ error: error.message });
-    }
-  }
-);
-
-// Actualizar producto (solo admin) con soporte para imágenes
-router.put(
-  "/:id",
-  verificarToken(["admin"]),
-  upload.array("imagenes", 5), // imágenes nuevas para añadir
-  async (req, res) => {
-    try {
-      const productoExistente = await Producto.findById(req.params.id);
-      if (!productoExistente)
-        return res.status(404).json({ error: "Producto no encontrado" });
-
-      const updateData = { ...req.body, actualizadoEn: Date.now() };
-
-      // Obtener las imágenes que el cliente quiere eliminar (si envía)
-      const imagenesParaEliminar = req.body.imagenesParaEliminar
-        ? JSON.parse(req.body.imagenesParaEliminar)
-        : [];
-
-      // Filtrar las imágenes actuales para eliminar las solicitadas
-      let imagenesActualizadas = productoExistente.imagenes.filter(
-        (img) => !imagenesParaEliminar.includes(img)
-      );
-
-      // Eliminar físicamente las imágenes del servidor
-      imagenesParaEliminar.forEach((imgNombre) => {
-        const rutaImagen = path.join(__dirname, "../uploads", imgNombre);
-        fs.unlink(rutaImagen, (err) => {
-          if (err) console.error("Error al eliminar archivo:", err);
-        });
-      });
-
-      // Agregar imágenes nuevas si existen
-      if (req.files && req.files.length > 0) {
-        const nuevasImagenes = req.files.map((file) => file.filename);
-        imagenesActualizadas = imagenesActualizadas.concat(nuevasImagenes);
-      }
-
-      updateData.imagenes = imagenesActualizadas;
-
-      const productoActualizado = await Producto.findByIdAndUpdate(
-        req.params.id,
-        updateData,
-        { new: true }
-      );
-
-      res.json(productoActualizado);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  }
+  productoController.listarProductos
 );
 
 // Obtener producto por ID
 router.get(
   "/:id",
   verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
-  async (req, res) => {
-    try {
-      const producto = await Producto.findById(req.params.id);
-      if (!producto) {
-        return res.status(404).json({ error: "Producto no encontrado" });
-      }
-      res.json(producto);
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
-  }
+  productoController.obtenerProductoPorId
+);
+
+// Actualizar producto (solo admin)
+router.put(
+  "/:id",
+  verificarToken(["admin"]),
+  upload.array("imagenes", 5),
+  productoController.actualizarProducto
 );
 
 // Eliminar producto (solo admin)
-router.delete("/:id", verificarToken(["admin"]), async (req, res) => {
-  try {
-    const producto = await Producto.findByIdAndDelete(req.params.id);
-    if (!producto)
-      return res.status(404).json({ error: "Producto no encontrado" });
-
-    res.json({ message: "Producto eliminado" });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
+router.delete(
+  "/:id",
+  verificarToken(["admin"]),
+  productoController.eliminarProducto
+);
 
 module.exports = router;

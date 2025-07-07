@@ -2,14 +2,17 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Genera la ruta de destino con fecha
+// Genera la ruta de destino con estructura por fecha
 const getUploadPath = () => {
   const now = new Date();
-  const dir = `uploads/${now.getFullYear()}/${
-    now.getMonth() + 1
-  }/${now.getDate()}`;
-  fs.mkdirSync(dir, { recursive: true });
-  return dir;
+  const folderPath = path.join(
+    "uploads",
+    String(now.getFullYear()),
+    String(now.getMonth() + 1),
+    String(now.getDate())
+  );
+  fs.mkdirSync(folderPath, { recursive: true });
+  return folderPath;
 };
 
 const storage = multer.diskStorage({
@@ -20,7 +23,23 @@ const storage = multer.diskStorage({
   filename: (req, file, cb) => {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(file.originalname).toLowerCase();
-    cb(null, uniqueSuffix + ext);
+    const filename = uniqueSuffix + ext;
+
+    // Guardar la ruta relativa (para MongoDB)
+    const now = new Date();
+    const relativePath = path.join(
+      "uploads",
+      String(now.getFullYear()),
+      String(now.getMonth() + 1),
+      String(now.getDate()),
+      filename
+    );
+
+    // Guardar esta ruta en req para usarla luego
+    if (!req.savedFiles) req.savedFiles = [];
+    req.savedFiles.push(relativePath);
+
+    cb(null, filename);
   },
 });
 
