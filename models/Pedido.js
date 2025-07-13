@@ -1,18 +1,24 @@
 const mongoose = require("mongoose");
 
+const ProductoPedidoSchema = new mongoose.Schema({
+  productoId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Producto",
+    required: true,
+  },
+  nombre: { type: String, required: true },
+  cantidad: { type: Number, required: true, min: 1 },
+  precioUnitario: { type: Number, required: true, min: 0 },
+});
+
 const PedidoSchema = new mongoose.Schema(
   {
-    producto: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Producto",
-      required: true,
-    },
-    cantidad: { type: Number, required: true, min: 1 },
     eventoId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Evento",
       required: true,
     },
+    productos: [ProductoPedidoSchema],
     creadoPor: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Usuario",
@@ -23,8 +29,6 @@ const PedidoSchema = new mongoose.Schema(
       enum: ["pendiente", "preparado", "entregado"],
       default: "pendiente",
     },
-    cantidadFaltante: { type: Number, default: 0 },
-    valorCobroFaltante: { type: Number, default: 0 },
     observacion: String,
   },
   { timestamps: true }
