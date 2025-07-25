@@ -48,9 +48,14 @@ app.use(
   verificarToken(["admin", "recepcionista", "supervisor", "despachador"]),
   require("./routes/pedidoRoutes")
 );
+app.use(
+  "/api/movimientos",
+  verificarToken(["admin", "recepcionista", "supervisor"]),
+  require("./routes/movimientoRoutes")
+);
 
 // 🛠 Ruta de prueba
-app.get("/ping", (req, res) => res.send("pong"));
+//app.get("/ping", (req, res) => res.send("pong"));
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Servidor escuchando en puerto ${PORT}`));
